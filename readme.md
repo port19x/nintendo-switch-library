@@ -9,4 +9,4 @@ This could probably be oneshot or twoshot by a frontier model and a good enough 
 
 ## Preview
 
-todo
+![Preview](./preview.jpg)
