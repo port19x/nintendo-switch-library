@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Find short, highly-rated Nintendo Switch games at Karlsruhe's public library.">
+  <title>Shortlist — Karlsruhe Switch shelf</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header><a class="brand" href="."><span class="brand-mark">S</span><span>SHORTLIST<small>KARLSRUHE SWITCH SHELF</small></span></a><a class="library-top" href="https://stadtbibliothek.karlsruhe.de/" target="_blank">Library website ↗</a></header>
+  <main>
+    <section class="hero"><p class="eyebrow">PLAY MORE · BROWSE LESS</p><h1>Your next great game<br>is already <em>on the shelf.</em></h1><p class="intro">Every Nintendo Switch game at Stadtbibliothek Karlsruhe, ranked by how much fun fits into an hour.</p>
+      <div class="stats"><div><strong id="gameCount">—</strong><span>games catalogued</span></div><div><strong id="ratedCount">—</strong><span>with ratings</span></div><div><strong id="bestDensity">—</strong><span>best points / hour</span></div></div>
+    </section>
+    <section class="catalogue">
+      <div class="catalogue-head"><div><p class="eyebrow">THE COLLECTION</p><h2>Find your perfect weekend</h2></div><p id="updated" class="updated"></p></div>
+      <div class="controls">
+        <label class="search"><span>⌕</span><input id="search" type="search" placeholder="Search 500+ titles…" aria-label="Search games"></label>
+        <label>Publisher<select id="party"><option value="all">All games</option><option value="first">First party</option><option value="third">Third party</option></select></label>
+        <label>Max. length<select id="length"><option value="all">Any length</option><option value="5">Up to 5 hours</option><option value="10">Up to 10 hours</option><option value="20">Up to 20 hours</option></select></label>
+        <label>Min. score<select id="score"><option value="0">Any score</option><option value="70">70+</option><option value="80">80+</option><option value="90">90+</option></select></label>
+        <button id="reset" type="button">Reset</button>
+      </div>
+      <div class="result-line"><span id="resultCount"></span><label>Sort by <select id="sort"><option value="density">Best value</option><option value="score">Metacritic</option><option value="hours">Shortest first</option><option value="title">Title A–Z</option></select></label></div>
+      <div class="table-wrap"><table><thead><tr><th>Game</th><th>Publisher</th><th>Metacritic</th><th>Main + extra</th><th>Density <span title="Metacritic score divided by hours">ⓘ</span></th><th></th></tr></thead><tbody id="games"></tbody></table><div id="empty" hidden><strong>No games found</strong><p>Try widening the filters.</p></div></div>
+      <nav class="pagination"><button id="prev">← Previous</button><span id="pages"></span><button id="next">Next →</button></nav>
+    </section>
+  </main>
+  <footer><span>SHORTLIST</span><p>Catalogue data from Stadtbibliothek Karlsruhe. Ratings belong to Metacritic; playtimes to HowLongToBeat.</p><a href="#">Back to top ↑</a></footer>
+  <script src="app.js" type="module"></script>
+</body></html>

@@ -1,0 +1,10 @@
+{
+  "name": "karlsruhe-switch-shelf",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:data": "python3 scripts/build_data.py",
+    "test": "node --test tests/*.test.js"
+  }
+}
