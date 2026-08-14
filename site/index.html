@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Switch Shelf · Stadtbibliothek Karlsruhe</title>
+<meta name="description" content="The Nintendo Switch catalogue of Stadtbibliothek Karlsruhe, ranked by Metacritic score and HowLongToBeat playtime.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%23b8352c'/%3E%3Crect x='3.2' y='3.2' width='3.4' height='9.6' rx='1.3' fill='%23fff'/%3E%3Crect x='9.4' y='3.2' width='3.4' height='9.6' rx='1.3' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --panel-2: #fbfcfd;
+    --text: #14161a;
+    --muted: #626a75;
+    --line: #e3e6ea;
+    --accent: #b8352c;
+    --accent-soft: #fdeceb;
+    --first: #1f6f4a;
+    --first-soft: #e6f4ec;
+    --third: #4a5360;
+    --third-soft: #eef0f3;
+    --good: #1f6f4a;
+    --mid: #9a6b12;
+    --bad: #a33;
+    --shadow: 0 1px 2px rgba(16,20,26,.06), 0 4px 16px rgba(16,20,26,.05);
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115;
+      --panel: #171a20;
+      --panel-2: #1c2027;
+      --text: #e7eaee;
+      --muted: #99a2ae;
+      --line: #272c34;
+      --accent: #ef5350;
+      --accent-soft: #2a1a1a;
+      --first: #5fd39b;
+      --first-soft: #14291f;
+      --third: #9aa4b1;
+      --third-soft: #1e232a;
+      --good: #5fd39b;
+      --mid: #e0b055;
+      --bad: #ef7d7d;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 4px 18px rgba(0,0,0,.3);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 18px 64px; }
+
+  header h1 { margin: 0 0 4px; font-size: 1.6rem; letter-spacing: -.02em; }
+  header p { margin: 0; color: var(--muted); font-size: .93rem; }
+  header a { color: inherit; }
+
+  .stats { display: flex; flex-wrap: wrap; gap: 18px; margin: 18px 0 20px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+          padding: 10px 14px; box-shadow: var(--shadow); min-width: 104px; }
+  .stat b { display: block; font-size: 1.3rem; letter-spacing: -.02em; }
+  .stat span { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+
+  .controls {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px; box-shadow: var(--shadow); margin-bottom: 16px;
+    display: grid; gap: 12px;
+    grid-template-columns: minmax(210px, 2fr) repeat(auto-fit, minmax(140px, 1fr));
+    align-items: end;
+  }
+  .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .field label { font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+  input[type="search"], input[type="number"], select {
+    font: inherit; color: var(--text); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; width: 100%; min-width: 0;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible, th button:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+  }
+  .checks { display: flex; flex-direction: column; gap: 6px; }
+  .check { display: flex; align-items: center; gap: 7px; font-size: .86rem; color: var(--muted); }
+  .check input { accent-color: var(--accent); }
+  .reset {
+    font: inherit; cursor: pointer; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px;
+  }
+  .reset:hover { border-color: var(--accent); color: var(--accent); }
+
+  .tablewrap { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+               box-shadow: var(--shadow); overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  thead th {
+    position: sticky; top: 0; z-index: 2; background: var(--panel-2);
+    border-bottom: 1px solid var(--line); padding: 0; text-align: left; white-space: nowrap;
+  }
+  thead th button {
+    /* `all: unset` also resets box-sizing to content-box, which would make
+       width:100% overflow the table by the horizontal padding. */
+    all: unset; box-sizing: border-box;
+    cursor: pointer; display: flex; align-items: center; gap: 5px;
+    padding: 11px 12px; width: 100%; font-size: .76rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--muted);
+  }
+  thead th button:hover { color: var(--accent); }
+  thead th[aria-sort] button { color: var(--text); }
+  .arrow { font-size: .62rem; opacity: .35; }
+  thead th[aria-sort] .arrow { opacity: 1; color: var(--accent); }
+  th.num button, td.num { justify-content: flex-end; text-align: right; }
+  /* Keep the density value and its bar on one line at every bar length. */
+  td.num { white-space: nowrap; }
+
+  tbody td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: var(--panel-2); }
+  .title { font-weight: 600; }
+  .title a { color: inherit; text-decoration: none; }
+  .title a:hover { color: var(--accent); text-decoration: underline; }
+  .sub { display: block; color: var(--muted); font-size: .77rem; font-weight: 400; margin-top: 1px; }
+  .loose { color: var(--mid); font-weight: 700; margin-right: 4px; cursor: help; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: .73rem; font-weight: 600; white-space: nowrap; }
+  .tag.first { background: var(--first-soft); color: var(--first); }
+  .tag.third { background: var(--third-soft); color: var(--third); }
+
+  .score { font-weight: 700; }
+  .score.good { color: var(--good); }
+  .score.mid { color: var(--mid); }
+  .score.bad { color: var(--bad); }
+  .none { color: var(--muted); opacity: .55; }
+
+  .bar { display: inline-block; vertical-align: middle; height: 5px; border-radius: 3px;
+         background: var(--accent); opacity: .75; margin-left: 7px; min-width: 2px; }
+
+  .links { display: flex; gap: 6px; justify-content: flex-end; }
+  .links a {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 24px; border-radius: 6px; text-decoration: none;
+    border: 1px solid var(--line); background: var(--panel-2);
+    font-size: .68rem; font-weight: 700; color: var(--muted);
+  }
+  .links a:hover { border-color: var(--accent); color: var(--accent); }
+  .links a[aria-disabled="true"] { opacity: .28; pointer-events: none; }
+
+  .empty { padding: 44px 16px; text-align: center; color: var(--muted); }
+  footer { margin-top: 20px; color: var(--muted); font-size: .82rem; }
+  footer details { margin-top: 8px; }
+  footer summary { cursor: pointer; }
+  footer code { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+  .count { color: var(--muted); font-size: .84rem; margin: 10px 2px; }
+
+  @media (max-width: 720px) {
+    .controls { grid-template-columns: 1fr 1fr; }
+    .field.search { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Switch Shelf</h1>
+    <p>
+      The Nintendo Switch catalogue of the
+      <a href="https://stadtbibliothek.karlsruhe.de/" target="_blank" rel="noopener">Stadtbibliothek Karlsruhe</a>,
+      ranked for short games that are actually good.
+    </p>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="controls">
+    <div class="field search">
+      <label for="q">Search</label>
+      <input id="q" type="search" placeholder="Title…" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="party">Publisher</label>
+      <select id="party">
+        <option value="all">All</option>
+        <option value="first">First-party only</option>
+        <option value="third">Third-party only</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="minScore">Min. Metacritic</label>
+      <input id="minScore" type="number" min="0" max="100" step="5" placeholder="any">
+    </div>
+    <div class="field">
+      <label for="maxHours">Max. hours</label>
+      <input id="maxHours" type="number" min="0" step="1" placeholder="any">
+    </div>
+    <div class="field">
+      <label for="onlyRanked">Data</label>
+      <div class="checks">
+        <span class="check"><input id="onlyRanked" type="checkbox"> Only fully rated</span>
+      </div>
+    </div>
+    <div class="field">
+      <label for="reset">&nbsp;</label>
+      <button class="reset" id="reset" type="button">Reset filters</button>
+    </div>
+  </div>
+
+  <p class="count" id="count"></p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr id="head"></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty" hidden>No games match these filters.</div>
+  </div>
+
+  <footer>
+    <p id="generated"></p>
+    <details>
+      <summary>How the density score works</summary>
+      <p>
+        Density answers “how much quality per hour of my life”:
+        <code id="formula"></code>, using HowLongToBeat’s <em>Main + Extra</em> time.
+        The floor means a game rated at or below it scores 0 no matter how short,
+        and the exponent below 1 keeps a 90-minute curiosity from burying every
+        excellent 10-hour game. Higher is better; it only exists to rank this
+        shelf against itself.
+      </p>
+    </details>
+    <details>
+      <summary>Data sources &amp; caveats</summary>
+      <p>
+        Titles and availability come from the library’s public RSS feed; scores from
+        Metacritic (preferring the Switch release) and playtimes from HowLongToBeat.
+        Titles are matched fuzzily across the three sources; a
+        <span class="loose">≈</span> marks a loose match worth a second look
+        before you walk over.
+        First- vs third-party uses Metacritic’s publisher credit — the library’s own
+        publisher field lists Nintendo of Europe as the distributor for many
+        third-party carts, so it is not used for this. Games the databases don’t
+        cover are kept in the table with blank cells rather than dropped.
+      </p>
+    </details>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const COLUMNS = [
+    { key: 'title',          label: 'Title',       num: false },
+    { key: 'firstParty',     label: 'Publisher',   num: false },
+    { key: 'metascore',      label: 'Metacritic',  num: true  },
+    { key: 'hoursMainExtra', label: 'Main + Extra',num: true  },
+    { key: 'density',        label: 'Density',     num: true  },
+    { key: 'links',          label: 'Open',        num: true, unsortable: true },
+  ];
+
+  const el = (id) => document.getElementById(id);
+  const state = { sort: 'density', dir: 'desc', games: [], maxDensity: 1 };
+
+  const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  const scoreClass = (score) => (score >= 75 ? 'good' : score >= 60 ? 'mid' : 'bad');
+
+  /* ---------- reading and writing filter state (mirrored into the URL) ---------- */
+
+  function readFilters() {
+    return {
+      q: el('q').value.trim().toLowerCase(),
+      party: el('party').value,
+      minScore: el('minScore').value === '' ? null : Number(el('minScore').value),
+      maxHours: el('maxHours').value === '' ? null : Number(el('maxHours').value),
+      onlyRanked: el('onlyRanked').checked,
+    };
+  }
+
+  function syncUrl(filters) {
+    const params = new URLSearchParams();
+    if (filters.q) params.set('q', filters.q);
+    if (filters.party !== 'all') params.set('party', filters.party);
+    if (filters.minScore != null) params.set('min', filters.minScore);
+    if (filters.maxHours != null) params.set('max', filters.maxHours);
+    if (filters.onlyRanked) params.set('ranked', '1');
+    if (state.sort !== 'density' || state.dir !== 'desc') {
+      params.set('sort', state.sort);
+      params.set('dir', state.dir);
+    }
+    const query = params.toString();
+    history.replaceState(null, '', query ? `?${query}` : location.pathname);
+  }
+
+  function restoreFromUrl() {
+    const params = new URLSearchParams(location.search);
+    if (params.has('q')) el('q').value = params.get('q');
+    if (params.has('party')) el('party').value = params.get('party');
+    if (params.has('min')) el('minScore').value = params.get('min');
+    if (params.has('max')) el('maxHours').value = params.get('max');
+    if (params.has('ranked')) el('onlyRanked').checked = true;
+    if (params.has('sort') && COLUMNS.some((column) => column.key === params.get('sort'))) {
+      state.sort = params.get('sort');
+      state.dir = params.get('dir') === 'asc' ? 'asc' : 'desc';
+    }
+  }
+
+  /* ---------- filtering and sorting ---------- */
+
+  function applyFilters(games, filters) {
+    return games.filter((game) => {
+      if (filters.q) {
+        const haystack = `${game.title} ${game.metacriticTitle ?? ''} ${game.hltbTitle ?? ''}`.toLowerCase();
+        if (!haystack.includes(filters.q)) return false;
+      }
+      if (filters.party === 'first' && !game.firstParty) return false;
+      if (filters.party === 'third' && game.firstParty) return false;
+      // The null checks are load-bearing: `null <= 15` is true in JavaScript, so
+      // without them a "max 15 hours" filter surfaces every game whose playtime
+      // is unknown — the opposite of what someone hunting short games wants.
+      if (filters.minScore != null && (game.metascore == null || game.metascore < filters.minScore)) return false;
+      if (filters.maxHours != null && (game.hoursMainExtra == null || game.hoursMainExtra > filters.maxHours)) return false;
+      if (filters.onlyRanked && game.density == null) return false;
+      return true;
+    });
+  }
+
+  function sortGames(games) {
+    const { sort, dir } = state;
+    const sign = dir === 'asc' ? 1 : -1;
+    return [...games].sort((a, b) => {
+      // Every branch compares in ascending order and lets `sign` flip it, so that
+      // "descending" cannot end up meaning two different things per column.
+      if (sort === 'title') return sign * a.title.localeCompare(b.title, 'de');
+      if (sort === 'firstParty') {
+        return sign * (Number(a.firstParty) - Number(b.firstParty)) || a.title.localeCompare(b.title, 'de');
+      }
+      const left = a[sort];
+      const right = b[sort];
+      // Missing values always sink to the bottom, whichever way we're sorting.
+      if (left == null && right == null) return a.title.localeCompare(b.title, 'de');
+      if (left == null) return 1;
+      if (right == null) return -1;
+      return sign * (left - right) || a.title.localeCompare(b.title, 'de');
+    });
+  }
+
+  /* ---------- rendering ---------- */
+
+  function renderHead() {
+    el('head').innerHTML = COLUMNS.map((column) => {
+      if (column.unsortable) {
+        return `<th class="${column.num ? 'num' : ''}"><button type="button" tabindex="-1" style="cursor:default">${esc(column.label)}</button></th>`;
+      }
+      const active = state.sort === column.key;
+      const arrow = active ? (state.dir === 'asc' ? '▲' : '▼') : '▤';
+      return `<th class="${column.num ? 'num' : ''}"${active ? ` aria-sort="${state.dir === 'asc' ? 'ascending' : 'descending'}"` : ''}>
+        <button type="button" data-key="${column.key}">${esc(column.label)}<span class="arrow">${arrow}</span></button>
+      </th>`;
+    }).join('');
+
+    el('head').querySelectorAll('button[data-key]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.key;
+        if (state.sort === key) {
+          state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+        } else {
+          state.sort = key;
+          // Text sorts read better A->Z; numbers read better best-first.
+          state.dir = key === 'title' ? 'asc' : 'desc';
+        }
+        render();
+      });
+    });
+  }
+
+  // Titles are matched fuzzily against two databases; a weak match means the
+  // score and playtime may belong to a neighbouring game in the series.
+  const LOW_CONFIDENCE = 0.7;
+  const isLooselyMatched = (game) =>
+    (game.metacriticMatchScore != null && game.metacriticMatchScore < LOW_CONFIDENCE) ||
+    (game.hltbMatchScore != null && game.hltbMatchScore < LOW_CONFIDENCE);
+
+  function rowHtml(game) {
+    const subtitleParts = [];
+    if (game.metacriticTitle && game.metacriticTitle !== game.title) subtitleParts.push(game.metacriticTitle);
+    if (game.releaseYear) subtitleParts.push(game.releaseYear);
+    if (game.copies > 1) subtitleParts.push(`${game.copies} copies`);
+
+    const loose = isLooselyMatched(game);
+    const looseNote = loose
+      ? `<span class="loose" title="Loose title match — data may come from ${esc(
+          [game.metacriticTitle, game.hltbTitle].filter(Boolean).join(' / ') || 'a similar title',
+        )}">≈</span>`
+      : '';
+
+    const score = game.metascore == null
+      ? '<span class="none">—</span>'
+      : `<span class="score ${scoreClass(game.metascore)}">${game.metascore}</span>`;
+
+    const hours = game.hoursMainExtra == null
+      ? '<span class="none">—</span>'
+      : `${game.hoursMainExtra} h`;
+
+    const density = game.density == null
+      ? '<span class="none">—</span>'
+      : `${game.density}<span class="bar" style="width:${Math.max(2, Math.round((game.density / state.maxDensity) * 38))}px"></span>`;
+
+    const link = (href, label, title) => (href
+      ? `<a href="${esc(href)}" target="_blank" rel="noopener" title="${esc(title)}">${label}</a>`
+      : `<a aria-disabled="true" title="not found">${label}</a>`);
+
+    return `<tr>
+      <td class="title">
+        ${link(game.libraryUrl, esc(game.title), 'Open in library catalogue')}
+        ${subtitleParts.length ? `<span class="sub">${looseNote}${esc(subtitleParts.join(' · '))}</span>` : looseNote}
+      </td>
+      <td><span class="tag ${game.firstParty ? 'first' : 'third'}">${game.firstParty ? 'First' : 'Third'}</span></td>
+      <td class="num">${score}</td>
+      <td class="num">${hours}</td>
+      <td class="num">${density}</td>
+      <td class="num"><div class="links">
+        ${link(game.libraryUrl, 'LIB', 'Library catalogue')}
+        ${link(game.metacriticUrl, 'MC', 'Metacritic')}
+        ${link(game.hltbUrl, 'HLTB', 'HowLongToBeat')}
+      </div></td>
+    </tr>`;
+  }
+
+  function render() {
+    const filters = readFilters();
+    const visible = sortGames(applyFilters(state.games, filters));
+
+    renderHead();
+    el('rows').innerHTML = visible.map(rowHtml).join('');
+    el('empty').hidden = visible.length > 0;
+    el('count').textContent =
+      `${visible.length} of ${state.games.length} titles` +
+      (visible.length ? ` · ${visible.filter((game) => game.firstParty).length} first-party` : '');
+    syncUrl(filters);
+  }
+
+  function renderStats(database) {
+    const { stats } = database;
+    const cards = [
+      ['Titles', stats.titles],
+      ['With score', stats.withMetascore],
+      ['With playtime', stats.withPlaytime],
+      ['Fully ranked', stats.complete],
+      ['First-party', stats.firstParty],
+    ];
+    el('stats').innerHTML = cards
+      .map(([label, value]) => `<div class="stat"><b>${value}</b><span>${label}</span></div>`)
+      .join('');
+
+    el('formula').textContent = database.density.formula;
+    const when = new Date(database.generatedAt);
+    el('generated').textContent =
+      `Database generated ${when.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} ` +
+      `from ${database.source.records} library records.`;
+  }
+
+  /* ---------- boot ---------- */
+
+  async function boot() {
+    let database;
+    try {
+      const res = await fetch('./games.json', { cache: 'no-cache' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      database = await res.json();
+    } catch (error) {
+      el('empty').hidden = false;
+      el('empty').textContent = `Could not load games.json (${error.message}).`;
+      return;
+    }
+
+    state.games = database.games ?? [];
+    state.maxDensity = Math.max(1, ...state.games.map((game) => game.density ?? 0));
+    renderStats(database);
+    restoreFromUrl();
+
+    const rerender = () => render();
+    el('q').addEventListener('input', rerender);
+    el('party').addEventListener('change', rerender);
+    el('minScore').addEventListener('input', rerender);
+    el('maxHours').addEventListener('input', rerender);
+    el('onlyRanked').addEventListener('change', rerender);
+    el('reset').addEventListener('click', () => {
+      el('q').value = '';
+      el('party').value = 'all';
+      el('minScore').value = '';
+      el('maxHours').value = '';
+      el('onlyRanked').checked = false;
+      state.sort = 'density';
+      state.dir = 'desc';
+      render();
+    });
+
+    render();
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>

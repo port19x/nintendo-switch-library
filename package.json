@@ -1,0 +1,17 @@
+{
+  "name": "switch-library-browser",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static browser for the Nintendo Switch shelf at Stadtbibliothek Karlsruhe, ranked by Metacritic score and HowLongToBeat playtime.",
+  "scripts": {
+    "build": "NODE_USE_ENV_PROXY=1 node scripts/build.mjs",
+    "smoke": "NODE_USE_ENV_PROXY=1 node scripts/build.mjs --limit 20",
+    "site": "node scripts/assemble.mjs",
+    "serve": "node scripts/assemble.mjs && python3 -m http.server 8080 --directory _site",
+    "test": "node scripts/test-matching.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,122 @@
+name: Build database and deploy site
+
+on:
+  push:
+    branches: [main, claude/switch-library-browser-7ozy7i]
+    # The build commits data/ back to the branch; ignoring it stops the loop.
+    paths-ignore: ['data/**']
+  schedule:
+    # Weekly, Monday 04:17 UTC — the shelf changes slowly.
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Only process the first N titles (0 = all)'
+        required: false
+        default: '0'
+      retry_misses:
+        description: 'Re-attempt titles that previously found no match'
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write
+  pages: read
+
+concurrency:
+  group: switch-shelf-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      pages_enabled: ${{ steps.pages.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check title matching
+        run: npm test
+
+      - name: Build games.json
+        run: |
+          node scripts/build.mjs \
+            ${{ github.event.inputs.limit != '' && github.event.inputs.limit != '0' && format('--limit {0}', github.event.inputs.limit) || '' }} \
+            ${{ github.event.inputs.retry_misses == 'true' && '--retry-misses' || '' }}
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/games.json data/cache.json
+
+          if git diff --staged --quiet; then
+            echo "No data changes."
+            exit 0
+          fi
+
+          # Every run rewrites generatedAt, and cache entries carry fetchedAt, so
+          # a diff is not the same as a change. Committing on the timestamps
+          # alone would add a no-op commit to the branch every single week.
+          substantive=$(git diff --staged -U0 -- data \
+            | grep -E '^[+-][^+-]' \
+            | grep -vcE '"(generatedAt|fetchedAt)"' || true)
+
+          if [ "$substantive" -eq 0 ]; then
+            echo "Only timestamps changed — nothing to commit."
+            git restore --staged data
+            exit 0
+          fi
+
+          echo "$substantive changed line(s) beyond timestamps."
+          git commit -m "chore(data): refresh library database [skip ci]"
+          git push
+
+      - name: Assemble site
+        run: node scripts/assemble.mjs
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      # Deploying to Pages that has never been enabled fails with a bare 404.
+      # Asking first lets the deploy job skip cleanly instead of going red on
+      # every push, and it starts working on its own once Pages is switched on.
+      - name: Is GitHub Pages enabled?
+        id: pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          status=$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pages")
+          if [ "$status" = "200" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping deploy — GitHub Pages is not enabled. Turn it on at" \
+                 "Settings → Pages → Source → GitHub Actions. The database was still built and committed."
+          fi
+
+  deploy:
+    needs: build
+    if: >-
+      needs.build.outputs.pages_enabled == 'true' &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
